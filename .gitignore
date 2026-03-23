@@ -1,25 +1,52 @@
 # Python
 venv/
+env/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.log
+*.out
+
+#Python build
+
+build/
+dist/
+*.egg-info/
+
+#Environment variables
+
 .env
+.env.*
+!.env.example
+
 
 # Node
 node_modules/
+frontend/node_modules/
 dist/
+frontend/dist/
 build/
 
 # Database
 *.db
 *.sqlite
+*.sqlite3
+
+#Logs
+logs/
+*.log
 
 # IDE
 .vscode/
 .idea/
 *.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Google API credentials
+credentials.json
+token.pickle

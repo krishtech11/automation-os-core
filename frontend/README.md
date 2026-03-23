@@ -1,50 +1,22 @@
-# Modular Automation Platform (Build in Public)
+## Frontend – Automation Platform UI
 
-This repository contains the core backend and frontend skeleton of a modular automation system designed to orchestrate repetitive digital tasks using schedulers, APIs, and intelligent workflows.
+This folder contains the frontend codebase for the automation platform being built as part of a 10-week public engineering challenge.
 
-The project is being built **publicly over 10 weeks**, with a focus on real-world engineering practices, not tutorials or toy demos.
+### Purpose
+The frontend acts as the control dashboard for:
+- Creating automation tasks using natural language
+- Monitoring task execution status
+- Viewing execution logs and failures
+- Managing scheduled workflows
 
----
+### Tech Stack
+- React (Vite)
+- Tailwind CSS
+- REST API integration with backend
 
-## 🚧 Current Status (Week 1)
-✅ Backend project structure initialized  
-✅ Frontend base setup completed  
-✅ Database connectivity configured  
-✅ Initial API endpoints tested  
+### Current Status
+- Project structure initialized
+- API integration setup in progress
+- UI scaffolding under active development
 
----
-
-## 🎯 Core Objectives
-- Task orchestration using schedulers
-- Modular workflow execution
-- API and system-level automation
-- Scalable backend architecture
-- Clean frontend monitoring dashboard
-
----
-
-## 🛠️ Tech Stack
-- Backend: Python (Flask)
-- Frontend: React + Vite
-- Database: PostgreSQL
-- Version Control: Git & GitHub
-
----
-
-## 📌 Development Approach
-This project is being constructed iteratively with:
-- Weekly engineering milestones
-- Visible progress and refactors
-- Real failures and performance tuning
-- Production-style architecture decisions
-
----
-
-## 📅 Build Timeline
-Week 1 → Foundation & system skeleton ✅  
-Week 2+ → Automation engines, schedulers, and integrations (in progress)
-
----
-
-> This is not a template project.  
-> This is a system being engineered from scratch.
+> Note: This frontend will evolve weekly as new automation capabilities are revealed.
