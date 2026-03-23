@@ -1,6 +1,6 @@
 # 🚀 UAOS - Unified AI Automation Operating System
 
-> AI-driven automation platform that converts natural language into scheduled workflows using LLM planning and distributed execution.
+>AI-powered distributed automation system that converts natural language into executable, scheduled workflows using LLM planning and asynchronous task execution.
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![React](https://img.shields.io/badge/React-18.0+-61DAFB.svg)](https://reactjs.org/)
@@ -9,13 +9,18 @@
 ## 📋 Table of Contents
 
 - [Overview](#overview)
+- [System Highlights](#System-highlights)
 - [Key Features](#key-features)
 - [Project Structure](#project-structure)
 - [Architecture](#architecture)
+- [Scheduling Strategy](#scheduling-strategy)
 - [AI Planning Flow](#ai-planning-flow)
 - [Tech Stack](#tech-stack)
 - [Quick Start](#quick-start)
 - [Workflows](#workflows)
+- [System Capabilities](#system-capabilities)
+- [System Design Decisions](#system-design--decisions)
+- [Engineering Challenges & Solutions](#engineering-challenges--solutions)
 - [Screenshots](#screenshots)
 - [API Documentation](#api-documentation)
 - [Deployment](#deployment)
@@ -37,10 +42,34 @@ Manual automation setup is time-consuming and requires technical knowledge. UAOS
 A full-stack platform combining:
 - 🧠 **AI-powered intent parsing** (TF-IDF + LLM)
 - ⚙️ **Distributed task execution** (Celery + Redis)
-- 🔄 **Smart scheduling** (APScheduler / Celery Beat)
+- 🔄 **Smart scheduling** (Celery Beat + DB-driven polling scheduler)
 - 📊 **Real-time monitoring** (React dashboard)
 
 ---
+
+## ⚡ System Highlights (What Makes This Project Strong)
+
+- 🧠 **LLM + Rule-based Hybrid Planning**
+  - Combines TF-IDF intent classification with local LLM (Ollama)
+  - Ensures reliability even when LLM fails
+
+- 🔄 **Custom Distributed Scheduling Engine**
+  - Built a **DB-driven scheduling system using Celery Beat + polling**
+  - Avoids limitations of static schedulers by dynamically evaluating tasks
+
+- 🧵 **Asynchronous Execution Architecture**
+  - Decoupled task creation, scheduling, and execution using Celery workers
+  - Handles retries, timeouts, and execution logging
+
+- 🛡️ **Robust Error Handling**
+  - JSON repair for LLM outputs
+  - Retry mechanisms with exponential backoff
+  - Execution logging with failure tracking
+
+- ⚙️ **Production-Oriented Design**
+  - Connection pooling fixes for PostgreSQL
+  - Background worker isolation
+  - Safe environment variable handling
 
 ## ✨ Key Features
 
@@ -55,7 +84,7 @@ A full-stack platform combining:
 3. **Invoice Sync** - Gmail → Google Drive automation with OAuth2
 
 ### 🎯 Advanced Scheduling
-- Cron-based periodic execution
+- Dynamic DB-driven scheduling (Celery Beat + polling)
 - Natural language schedule parsing: *"every Friday at 6 PM"*
 - Timezone-aware (Asia/Kolkata)
 
@@ -81,7 +110,7 @@ UAOS/
 │   │   │
 │   │   ├── core/                     # Core system logic
 │   │   │   ├── llm_planner_free.py   # Ollama LLM workflow planner
-│   │   │   ├── scheduler.py          # APScheduler setup
+│   │   │   ├── scheduler.py          # Deprecated / legacy scheduler (optional)
 │   │   │   └── celery_scheduler.py   # Celery task scheduling
 │   │   │
 │   │   ├── engines/                  # Automation engines
@@ -94,7 +123,7 @@ UAOS/
 │   │   │   ├── file_cleanup.py
 │   │   │   └── invoice_sync.py
 │   │
-│   ├── celery_worker.py              # Celery worker entrypoint
+│   ├── celery_worker.py              # legacy entrypoint (current: app.celery_app)
 │   ├── config.py                     # Environment configuration
 │   ├── run.py                        # Flask application launcher
 │   └── requirements.txt
@@ -178,9 +207,22 @@ UAOS/
                                    └──────────────────────┘
 
 ```
+### 🔄 Scheduling Strategy
+
+Unlike traditional cron-based systems, UAOS uses a **database-driven scheduling model**:
+
+1. Celery Beat triggers a periodic task (`check_scheduled_tasks`)
+2. The system queries PostgreSQL for due tasks (`next_run <= now`)
+3. Eligible tasks are dispatched to Celery workers
+4. Workers execute workflows and update execution state
+
+This approach enables:
+- Dynamic task scheduling (no static cron definitions)
+- Real-time updates to schedules
+- Better control over task execution and retries
 ---
 
-## AI Planning Flow
+## 🧠 AI Planning Flow
 This explains how a natural-language task becomes an executable workflow.
 
 ```mermaid
@@ -217,7 +259,7 @@ Q --> R[Dashboard Monitoring]
 
 ```
 
-## LLM Planning Logic
+## 🔍 LLM Planning Logic
 
 ```mermaid
 flowchart TD
@@ -248,7 +290,7 @@ H --> J[Store in Database]
 - **Database:** PostgreSQL 14
 - **ORM:** SQLAlchemy
 - **Task Queue:** Celery 5.3 + Redis 5.0
-- **Scheduler:** APScheduler / Celery Beat
+- **Scheduler:** Celery Beat + Custom DB Polling Scheduler
 - **AI/ML:** scikit-learn (TF-IDF), Ollama (Llama 3.2 local model)
 
 ### Frontend
@@ -345,10 +387,10 @@ redis-server
 cd backend && python run.py
 
 # Terminal 4: Celery Worker
-cd backend && celery -A celery_worker worker --loglevel=info
+cd backend && celery -A app.celery_app worker --pool=solo --loglevel=info
 
 # Terminal 5: Celery Beat (optional, for scheduled tasks)
-cd backend && celery -A celery_beat beat --loglevel=info
+cd backend && celery -A app.celery_app beat --loglevel=info
 ```
 
 ### 7. Access Dashboard
@@ -402,6 +444,66 @@ Open http://localhost:3000
 **Example:** *"Sync Gmail invoices to Drive every Monday"*
 
 ---
+
+## 📊 System Capabilities
+
+- Handles asynchronous workflows using distributed workers
+- Supports natural language → structured automation pipeline
+- Scalable architecture with decoupled components
+- Fault-tolerant execution with retry and timeout mechanisms
+- Real-time monitoring via execution logs
+
+## 🧩 System Design Decisions
+
+- Chose **Celery over threading** for true asynchronous scalability
+- Implemented **DB-driven scheduler** instead of static cron for dynamic task updates
+- Used **local LLM (Ollama)** to avoid API cost and ensure offline capability
+- Designed **modular workflow engine** for easy extensibility
+- Balanced **LLM + rule-based parsing** for reliability and performance
+
+## 🧠 Engineering Challenges & Solutions
+
+### 1. Duplicate Task Execution
+**Problem:** Scheduler triggering same task multiple times  
+**Solution:**  
+- Implemented time-based execution guard using `last_run`
+- Ensured `next_run` is updated before execution
+
+---
+
+### 2. Celery + Flask Context Issue
+**Problem:** `Working outside of application context` error  
+**Solution:**  
+- Wrapped Celery tasks with `app.app_context()`  
+- Ensured DB operations are context-aware  
+
+---
+
+### 3. Database Connection Exhaustion
+**Problem:** PostgreSQL connection slots getting exhausted  
+**Solution:**  
+- Added `db.session.remove()` cleanup in all tasks  
+- Configured SQLAlchemy connection pooling  
+- Limited scheduler load using batch queries  
+
+---
+
+### 4. LLM Output Reliability
+**Problem:** Invalid JSON from LLM responses  
+**Solution:**  
+- Implemented JSON repair and validation layer  
+- Added fallback to rule-based intent parser  
+
+---
+
+### 5. Scheduler Race Conditions
+**Problem:** Multiple executions due to timing mismatch  
+**Solution:**  
+- Introduced execution guards using `last_run` timestamps  
+- Simplified concurrency handling for reliability  
+
+---
+
 
 ## 📸 Screenshots
 
@@ -512,6 +614,17 @@ Response: 200 OK
 ---
 
 ## 🚢 Deployment
+
+UAOS is designed as a **multi-service distributed system** consisting of:
+
+- Flask API (Web Service)
+- Celery Worker (Background Processing)
+- Celery Beat (Scheduler)
+- Redis (Message Broker)
+- PostgreSQL (Database)
+
+Each component is deployed independently for scalability.
+> ⚠️ Note: UAOS requires multiple services (worker + scheduler + broker) and is deployed as a distributed system.
 
 ### Docker Deployment
 ```bash
