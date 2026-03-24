@@ -8,7 +8,12 @@ from celery.schedules import crontab
 import os
 
 # Redis connection
-REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+REDIS_URL = os.environ.get('REDIS_URL')
+
+if not REDIS_URL:
+    raise ValueError("REDIS_URL is not set properly")
+
+print("REDIS_URL:", REDIS_URL)
 
 # Create Celery app
 celery_app = Celery(

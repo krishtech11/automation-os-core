@@ -51,3 +51,7 @@ Thumbs.db
 # Google API credentials
 credentials.json
 token.pickle
+
+# Celery Beat schedule file
+celerybeat-schedule*
+*.dat

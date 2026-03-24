@@ -454,3 +454,7 @@ def ai_assistant():
     return jsonify({
     "reply": "I can only help create automation tasks. Please give a clear automation command."
     })
+
+@app.route("/")
+def home():
+    return {"message": "UAOS API is running"}
