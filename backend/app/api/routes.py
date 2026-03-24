@@ -116,6 +116,17 @@ def create_task():
             return jsonify({
                 "error": "Could not understand the task clearly. Try being more specific."
             }), 400
+        
+    # 🔥 FORCE SCHEDULE FIX (final override for demo)
+    if not schedule or schedule.strip() == "":
+        if "every minute" in raw_text.lower():
+            schedule = "every minute"
+        elif "daily" in raw_text.lower():
+            schedule = "daily"
+        elif "every hour" in raw_text.lower():
+            schedule = "every hour"
+        else:
+            schedule = "manual"
 
     # -------------------------
     # CREATE TASK
@@ -454,7 +465,3 @@ def ai_assistant():
     return jsonify({
     "reply": "I can only help create automation tasks. Please give a clear automation command."
     })
-
-@api_bp.route("/")
-def home():
-    return {"message": "UAOS API is running"}
