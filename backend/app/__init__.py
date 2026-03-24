@@ -31,9 +31,11 @@ def create_app(config_class=Config):
     with app.app_context():
         db.create_all()
         
-        # Initialize scheduler
+        import os
         from app.core.scheduler import init_scheduler
-        init_scheduler(app)
+
+        if os.environ.get("ENV") != "production":
+            init_scheduler(app)
 
         # Initialize FREE LLM planner
         from app.core.llm_planner_free import init_free_llm_planner

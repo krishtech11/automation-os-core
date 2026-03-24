@@ -196,7 +196,7 @@ class NewsDigestWorkflow(WorkflowBase):
 
             self.validate_config(config, ['email'])
 
-            email = config.get('email') or "your_email@gmail.com"
+            email = config.get('email') or "krishnaarora747@gmail.com"
 
             # Fix placeholder issue
             if "user_email" in email or "<" in email:
