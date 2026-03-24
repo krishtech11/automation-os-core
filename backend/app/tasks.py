@@ -49,7 +49,13 @@ def execute_workflow_task(self, task_id):
 
             # 🔥 HARD DUPLICATE PROTECTION (FINAL)
             if task.last_run:
-                delta = now - task.last_run
+                last_run = task.last_run
+
+                # 🔥 FIX timezone mismatch
+                if last_run.tzinfo is None:
+                    last_run = IST.localize(last_run)
+
+                delta = now - last_run
                 if delta.total_seconds() < 50:
                     logger.warning(f"Skipping duplicate execution for task {task.id}")
                     
