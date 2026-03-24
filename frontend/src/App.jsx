@@ -84,8 +84,7 @@ function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          raw_text: newTaskText,
-          schedule: newTaskSchedule 
+        raw_text: newTaskText
         })
       });
       
@@ -162,14 +161,17 @@ function App() {
   };
 
   const formatDateTime = (dateStr) => {
-    if (!dateStr) return 'Never';
-    const date = new Date(dateStr);
-    return date.toLocaleString('en-IN', { 
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  if (!dateStr) return 'Never';
+
+  const date = new Date(dateStr);
+
+  return date.toLocaleString('en-IN', { 
+    timeZone: 'Asia/Kolkata',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
   };
 
   const filteredTasks = tasks.filter(task => {

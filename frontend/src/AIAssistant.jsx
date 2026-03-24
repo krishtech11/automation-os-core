@@ -17,7 +17,7 @@ function AIAssistant() {
 
     try {
 
-      const res = await fetch("http://localhost:5000/api/assistant", {
+      const res = await fetch("https://uaos-backend.onrender.com/api/assistant", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
