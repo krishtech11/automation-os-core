@@ -14,6 +14,11 @@ logging.basicConfig(
 
 def create_app(config_class=Config):
     app = Flask(__name__)
+    @app.route("/")
+
+    def root():
+        return {"status": "UAOS backend live 🚀"}
+    
     app.config.from_object(config_class)
     
     db.init_app(app)
@@ -42,7 +47,7 @@ def create_app(config_class=Config):
 
         return {
             "status": "error",
-            "message": "Something went wrong"
+            "message": str(e)
         }, 500
     
     return app
