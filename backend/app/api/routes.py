@@ -138,6 +138,7 @@ def create_task():
     # -------------------------
     # CREATE TASK
     # -------------------------
+    config['email'] = "your_email@gmail.com"
 
     task = Task(
         user_id=user.id,
