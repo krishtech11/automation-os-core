@@ -117,16 +117,23 @@ def create_task():
                 "error": "Could not understand the task clearly. Try being more specific."
             }), 400
         
-    # 🔥 FORCE SCHEDULE FIX (final override for demo)
-    if not schedule or schedule.strip() == "":
-        if "every minute" in raw_text.lower():
-            schedule = "every minute"
-        elif "daily" in raw_text.lower():
-            schedule = "daily"
-        elif "every hour" in raw_text.lower():
-            schedule = "every hour"
-        else:
-            schedule = "manual"
+    # 🔥 FORCE SCHEDULE FIX (FINAL, GUARANTEED)
+
+    raw_lower = raw_text.lower()
+
+    if "every minute" in raw_lower:
+        schedule = "every minute"
+
+    elif "every hour" in raw_lower:
+        schedule = "every hour"
+
+    elif "daily" in raw_lower:
+        schedule = "daily"
+
+    elif not schedule or schedule.strip() == "":
+        schedule = "manual"
+
+    print("FINAL SCHEDULE:", schedule)
 
     # -------------------------
     # CREATE TASK
