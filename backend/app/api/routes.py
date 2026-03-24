@@ -455,6 +455,6 @@ def ai_assistant():
     "reply": "I can only help create automation tasks. Please give a clear automation command."
     })
 
-@app.route("/")
+@api_bp.route("/")
 def home():
     return {"message": "UAOS API is running"}
