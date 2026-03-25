@@ -178,7 +178,7 @@ class NewsDigestWorkflow(WorkflowBase):
     import os
     import requests
 
-    def send_email_sendgrid(to_email, subject, html_content):
+    def send_email_sendgrid(self, to_email, subject, html_content):
 
         url = "https://api.sendgrid.com/v3/mail/send"
 
