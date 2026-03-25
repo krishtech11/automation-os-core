@@ -88,9 +88,12 @@ def create_task():
     
 
     # demo user
-    user = User.query.filter_by(email="demo@uaos.com").first()
+    email = data.get("email") or "krishnaarora747@gmail.com"
+
+    user = User.query.filter_by(email=email).first()
+
     if not user:
-        user = User(email='demo@uaos.com', name='Demo User')
+        user = User(email=email, name='User')
         db.session.add(user)
         db.session.commit()
 
@@ -155,8 +158,13 @@ def create_task():
     # -------------------------
     # CREATE TASK
     # -------------------------
+    email = data.get("email")
+
+    if not email:
+        email = "krishnaarora747@gmail.com"   # fallback for now
+
     config = {
-    "email": user.email
+        "email": email
     }
 
     schedule = normalize_schedule(schedule)

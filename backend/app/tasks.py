@@ -10,6 +10,27 @@ import logging
 logger = logging.getLogger(__name__)
 IST = pytz_timezone('Asia/Kolkata')
 
+def calculate_next_run(schedule, now):
+    from datetime import timedelta
+
+    if not schedule:
+        return None
+
+    schedule = schedule.lower()
+
+    if schedule == "every_minute":
+        return now + timedelta(minutes=1)
+
+    elif schedule == "every_hour":
+        return now + timedelta(hours=1)
+
+    elif schedule == "daily":
+        return now + timedelta(days=1)
+
+    elif schedule.startswith("every_"):
+        return now + timedelta(days=7)
+
+    return None
 
 @celery_app.task(
     bind=True,
@@ -111,25 +132,6 @@ def execute_workflow_task(self, task_id):
 
             task.total_executions = (task.total_executions or 0) + 1
 
-            # 🔥 UPDATE NEXT RUN (safe but secondary now)
-            if task.schedule:
-                schedule = task.schedule.lower()
-
-                if "every minute" in schedule:
-                    task.next_run = now + timedelta(minutes=1)
-
-                elif "every hour" in schedule:
-                    task.next_run = now + timedelta(hours=1)
-
-                elif "daily" in schedule:
-                    task.next_run = now + timedelta(days=1)
-
-                elif "every_" in schedule:
-                    task.next_run = now + timedelta(days=7)
-
-                else:
-                    task.next_run = None
-
             # 🔥 RELEASE LOCK (CRITICAL FIX)
             task.status = "ACTIVE"
 
@@ -195,6 +197,18 @@ def execute_workflow_task(self, task_id):
         finally:
             from app import db
             db.session.remove()
+
+    from datetime import datetime
+    from pytz import timezone
+
+    IST = timezone("Asia/Kolkata")
+    now = datetime.now(IST)
+
+    task.last_run = now
+    task.total_executions = (task.total_executions or 0) + 1
+
+    # SINGLE SOURCE OF TRUTH
+    task.next_run = calculate_next_run(task.schedule, now)
         
 
 
@@ -265,32 +279,7 @@ def check_scheduled_tasks():
             task.status = "RUNNING"
             db.session.commit()
 
-            schedule = (task.schedule or "").lower()
-
-            # EXACT MATCHING — NO STRING GUESSING
-
-            if schedule == "every_minute":
-                next_run = now + timedelta(minutes=1)
-
-            elif schedule == "every_hour":
-                next_run = now + timedelta(hours=1)
-
-            elif schedule == "daily":
-                next_run = now + timedelta(days=1)
-
-            elif schedule.startswith("every_"):
-                next_run = now + timedelta(days=7)
-
-            else:
-                next_run = None
-
-            # 🔥 FIX timezone before saving
-            if next_run and next_run.tzinfo is None:
-                next_run = IST.localize(next_run)
-
-            task.next_run = next_run
-            db.session.commit()
-
+           # DO NOT calculate next_run here
             execute_workflow_task.delay(task.id)
 
         # 🔥 cleanup DB session
