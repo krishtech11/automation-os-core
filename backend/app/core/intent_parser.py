@@ -116,59 +116,34 @@ class AdvancedIntentParser:
         
         return None
     
-    def extract_schedule(self, text: str) -> Tuple[str, Optional[Dict]]:
-        """
-        Advanced schedule extraction with time support
-        Returns: (schedule_string, time_dict)
-        """
-        text_lower = text.lower()
-        time_info = self.extract_time(text)
-        
-        # Extract interval numbers (every N hours/days)
-        numbers = self.extract_numbers(text_lower)
-        
-        # Daily patterns
-        if any(word in text_lower for word in ['daily', 'har din', 'roz', 'everyday']):
-            if time_info:
-                return f"daily_{time_info['hour']}_{time_info['minute']}", time_info
-            elif 'morning' in text_lower or 'subah' in text_lower:
-                return 'daily_morning', {'hour': 7, 'minute': 0}
-            elif 'evening' in text_lower or 'shaam' in text_lower:
-                return 'daily_evening', {'hour': 18, 'minute': 0}
-            elif 'night' in text_lower or 'raat' in text_lower:
-                return 'daily_night', {'hour': 22, 'minute': 0}
-            else:
-                return 'daily', {'hour': 9, 'minute': 0}
-        
-        # Weekly patterns with time
-        days = {
-            'monday': 'somwar', 'tuesday': 'mangalwar', 'wednesday': 'budhwar',
-            'thursday': 'guruwar', 'friday': 'shukrawar', 
-            'saturday': 'shaniwar', 'sunday': 'raviwar'
-        }
-        
-        for eng, hindi in days.items():
-            if eng in text_lower or hindi in text_lower:
-                if time_info:
-                    return f"every_{eng}_{time_info['hour']}_{time_info['minute']}", time_info
-                else:
-                    return f'every_{eng}', {'hour': 9, 'minute': 0}
-        
-        # Interval patterns (every N hours/minutes)
-        if 'every' in text_lower:
-            if numbers:
-                num = numbers[0]
-                if 'hour' in text_lower or 'ghante' in text_lower:
-                    return f'every_{num}_hours', None
-                elif 'minute' in text_lower or 'min' in text_lower:
-                    return f'every_{num}_minutes', None
-            
-            if 'hour' in text_lower:
-                return 'hourly', None
-            elif 'minute' in text_lower:
-                return 'every_minute', None
-        
-        # Default
+    def extract_schedule(self, text: str):
+        if not text:
+            return 'manual', None
+
+        t = text.lower().strip()
+
+        # --- DAILY ---
+        if "daily" in t or "everyday" in t or "every day" in t:
+            return "daily", {'hour': 9, 'minute': 0}
+
+        # --- HOURLY ---
+        if "every hour" in t or "hourly" in t:
+            return "every_hour", None
+
+        # --- MINUTE ---
+        if "every minute" in t:
+            return "every_minute", None
+
+        # --- WEEKLY ---
+        days = [
+            "monday", "tuesday", "wednesday",
+            "thursday", "friday", "saturday", "sunday"
+        ]
+
+        for day in days:
+            if f"every {day}" in t or day in t:
+                return f"every_{day}", {'hour': 9, 'minute': 0}
+
         return 'manual', None
     
     def extract_category(self, text: str) -> str:
@@ -322,36 +297,3 @@ def parse_task_intent_v2(raw_text: str) -> Tuple[str, Dict, str, float]:
     Helper function to use advanced parser
     """
     return advanced_parser.parse(raw_text)
-
-
-import re
-
-def extract_schedule(text):
-    if not text:
-        return None
-
-    t = text.lower().strip()
-
-    # --- DAILY ---
-    if "daily" in t or "everyday" in t or "every day" in t:
-        return "daily"
-
-    # --- HOURLY ---
-    if "every hour" in t or "hourly" in t:
-        return "every_hour"
-
-    # --- MINUTE ---
-    if "every minute" in t:
-        return "every_minute"
-
-    # --- WEEKLY ---
-    days = [
-        "monday", "tuesday", "wednesday",
-        "thursday", "friday", "saturday", "sunday"
-    ]
-
-    for day in days:
-        if f"every {day}" in t or day in t:
-            return f"every_{day}"
-
-    return None
