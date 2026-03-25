@@ -8,6 +8,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from pytz import timezone
+IST = timezone("Asia/Kolkata")
+
 
 @api_bp.route('/health', methods=['GET'])
 def health_check():
@@ -37,8 +40,8 @@ def get_tasks():
             'schedule': task.schedule,
             'status': task.status,
             'created_at': task.created_at.isoformat(),
-            'next_run': task.next_run.isoformat() if task.next_run else None,
-            'last_run': task.last_run.isoformat() if task.last_run else None,
+            'next_run': task.next_run.astimezone(IST).isoformat() if task.next_run else None,
+            'last_run': task.last_run.astimezone(IST).isoformat() if task.last_run else None,
             'total_executions': task.total_executions,
             'log_count': len(task.logs)
         } for task in tasks]
@@ -215,6 +218,12 @@ def create_task():
             next_run = now + timedelta(days=days_ahead)
             next_run = next_run.replace(hour=9, minute=0, second=0, microsecond=0)
 
+    elif "every_friday" in schedule:
+        days_ahead = 4 - now.weekday()  # Friday = 4
+        if days_ahead <= 0:
+            days_ahead += 7
+        task.next_run = now + timedelta(days=days_ahead)
+
 
     # MANUAL → no schedule
     if next_run:
@@ -252,7 +261,7 @@ def create_task():
             'parsed_type': task.parsed_type,
             'schedule': task.schedule,
             'config': task.config,
-            'next_run': task.next_run.isoformat() if task.next_run else None,
+            'next_run': task.next_run.astimezone(IST).isoformat() if task.next_run else None,
             'confidence': confidence
         }
     }), 201
@@ -280,8 +289,8 @@ def get_task(task_id):
         'schedule': task.schedule,
         'status': task.status,
         'created_at': task.created_at.isoformat(),
-        'next_run': task.next_run.isoformat() if task.next_run else None,
-        'last_run': task.last_run.isoformat() if task.last_run else None,
+        'next_run': task.next_run.astimezone(IST).isoformat() if task.next_run else None,
+        'last_run': task.last_run.astimezone(IST).isoformat() if task.last_run else None,
         'total_executions': task.total_executions,
         'logs': logs
     })

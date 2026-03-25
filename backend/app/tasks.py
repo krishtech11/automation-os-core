@@ -47,6 +47,10 @@ def execute_workflow_task(self, task_id):
 
             now = datetime.now(IST)
 
+            # 🔥 FIX timezone safety
+            if now.tzinfo is None:
+                now = IST.localize(now)
+
             # 🔥 HARD DUPLICATE PROTECTION (FINAL)
             if task.last_run:
                 last_run = task.last_run
@@ -99,6 +103,9 @@ def execute_workflow_task(self, task_id):
 
             # 🔥 Update task state
             task.last_run = now
+            if task.last_run and task.last_run.tzinfo is None:
+                task.last_run = IST.localize(task.last_run)
+
             task.total_executions = (task.total_executions or 0) + 1
 
             # 🔥 UPDATE NEXT RUN (safe but secondary now)
@@ -239,6 +246,9 @@ def check_scheduled_tasks():
 
         now = datetime.now(IST)
 
+        if now.tzinfo is None:
+            now = IST.localize(now)
+            
         tasks = Task.query.filter(
             Task.status == "ACTIVE",
             Task.next_run != None,
@@ -271,6 +281,10 @@ def check_scheduled_tasks():
 
             else:
                 next_run = None
+
+            # 🔥 FIX timezone before saving
+            if next_run and next_run.tzinfo is None:
+                next_run = IST.localize(next_run)
 
             task.next_run = next_run
             db.session.commit()
