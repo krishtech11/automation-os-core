@@ -113,6 +113,9 @@ def create_task():
     "email": user.email
     }
 
+    print("RAW TEXT:", raw_text)
+    print("FINAL SCHEDULE STORED:", schedule)
+
     task = Task(
         user_id=user.id,
         raw_text=raw_text,
@@ -189,7 +192,7 @@ def create_task():
             next_run = now + timedelta(days=days_ahead)
             next_run = next_run.replace(hour=9, minute=0, second=0, microsecond=0)
 
-
+    print("NEXT RUN CALCULATED:", next_run)
     # MANUAL → no schedule
     if next_run:
         task.next_run = next_run
