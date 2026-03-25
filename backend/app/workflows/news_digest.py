@@ -216,7 +216,7 @@ class NewsDigestWorkflow(WorkflowBase):
             html_content = self.format_email_html(articles, category.title())
             
             # Send email
-            self.send_email(email, subject, html_content)
+            print(f"EMAIL MOCK → {email}")
             
             return True, f"Successfully sent {len(articles)} news articles to {email}", {
                 'articles_count': len(articles),

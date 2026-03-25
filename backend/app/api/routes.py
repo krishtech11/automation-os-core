@@ -93,6 +93,13 @@ def create_task():
         except Exception as e:
             logger.warning(f"LLM planner failed: {str(e)}")
 
+    from app.core.intent_parser import extract_schedule
+
+    if not schedule or schedule.strip() == "":
+        schedule = extract_schedule(raw_text) or "manual"
+
+    print("FINAL SCHEDULE:", schedule)
+
     # -------------------------
     # FALLBACK PARSER
     # -------------------------
