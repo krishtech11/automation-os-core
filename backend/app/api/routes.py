@@ -142,7 +142,7 @@ def create_task():
             schedule = extracted
         else:
             logger.warning("Parser failed → staying manual")
-            
+
     # FINAL fallback
     if not schedule or schedule.strip() == "":
         schedule = "manual"
@@ -162,6 +162,10 @@ def create_task():
     schedule = normalize_schedule(schedule)
 
     logger.info(f"NORMALIZED SCHEDULE: {schedule}")
+
+    if not workflow_type or workflow_type == "MANUAL":
+        logger.warning("LLM failed → defaulting to NEWS_DIGEST")
+        workflow_type = "NEWS_DIGEST"
 
     task = Task(
         user_id=user.id,

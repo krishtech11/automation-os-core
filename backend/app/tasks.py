@@ -83,13 +83,16 @@ def execute_workflow_task(self, task_id):
             logger.info(f"[Celery Worker] Executing task {task.id}: {task.raw_text}")
 
             # Execute workflow
-            workflow_type = task.parsed_type or 'MANUAL'
+            workflow_type = task.parsed_type
             workflow_config = task.config or {}
 
-            if workflow_type == 'MANUAL':
-                success = True
-                success_message = f"✓ Manual task executed: {task.raw_text}"
+            if not workflow_type or workflow_type == 'MANUAL':
+                logger.warning(f"No valid workflow type for task {task.id}")
+                
+                success = False
+                success_message = "No valid workflow → skipped execution"
                 details = {}
+
             else:
                 success, success_message, details = execute_workflow(
                     workflow_type,
@@ -262,21 +265,20 @@ def check_scheduled_tasks():
             task.status = "RUNNING"
             db.session.commit()
 
-            task.status = "RUNNING"
-            db.session.commit()
-
             schedule = (task.schedule or "").lower()
 
-            if "every minute" in schedule:
+            # EXACT MATCHING — NO STRING GUESSING
+
+            if schedule == "every_minute":
                 next_run = now + timedelta(minutes=1)
 
-            elif "every hour" in schedule:
+            elif schedule == "every_hour":
                 next_run = now + timedelta(hours=1)
 
-            elif "daily" in schedule:
+            elif schedule == "daily":
                 next_run = now + timedelta(days=1)
 
-            elif "every_" in schedule:
+            elif schedule.startswith("every_"):
                 next_run = now + timedelta(days=7)
 
             else:
