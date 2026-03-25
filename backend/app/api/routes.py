@@ -96,52 +96,13 @@ def create_task():
 
     from app.core.intent_parser import extract_schedule
 
-    if not schedule or schedule.strip() == "":
-        schedule = extract_schedule(raw_text) or "manual"
-
-    print("FINAL SCHEDULE:", schedule)
-
-    # -------------------------
-    # FALLBACK PARSER
-    # -------------------------
-
-    from app.core.intent_parser import extract_schedule
-
-    raw_lower = raw_text.lower()
-
-    # 🔥 ALWAYS try parser if LLM failed
+    # SINGLE SOURCE OF TRUTH
     if not schedule or schedule.strip() == "" or schedule == "manual":
         schedule = extract_schedule(raw_text)
 
-    # 🔥 FINAL fallback (guaranteed detection)
+    # FINAL fallback
     if not schedule or schedule.strip() == "":
-        
-        if "every minute" in raw_lower:
-            schedule = "every minute"
-
-        elif "every hour" in raw_lower:
-            schedule = "every hour"
-
-        elif "daily" in raw_lower:
-            schedule = "daily"
-
-        elif "every monday" in raw_lower:
-            schedule = "every_monday"
-
-        elif "every tuesday" in raw_lower:
-            schedule = "every_tuesday"
-
-        elif "every wednesday" in raw_lower:
-            schedule = "every_wednesday"
-
-        elif "every thursday" in raw_lower:
-            schedule = "every_thursday"
-
-        elif "every friday" in raw_lower:
-            schedule = "every_friday"
-
-        else:
-            schedule = "manual"
+        schedule = "manual"
 
     print("FINAL SCHEDULE:", schedule)
 
