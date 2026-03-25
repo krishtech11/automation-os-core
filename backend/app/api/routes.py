@@ -139,10 +139,10 @@ def create_task():
     if not schedule or schedule.strip() == "":
         schedule = "manual"
     
-    print("RAW TEXT:", raw_text)
-    print("LLM RAW SCHEDULE:", llm_schedule)
-    print("EXTRACTED SCHEDULE:", extracted)
-    print("FINAL SCHEDULE:", schedule)
+    logger.info(f"RAW TEXT: {raw_text}")
+    logger.info(f"LLM RAW SCHEDULE: {llm_schedule}")
+    logger.info(f"EXTRACTED SCHEDULE: {extracted}")
+    logger.info(f"FINAL SCHEDULE: {schedule}")
 
     # -------------------------
     # CREATE TASK
@@ -153,7 +153,7 @@ def create_task():
 
     schedule = normalize_schedule(schedule)
 
-    print("NORMALIZED SCHEDULE:", schedule)
+    logger.info(f"NORMALIZED SCHEDULE: {schedule}")
 
     task = Task(
         user_id=user.id,
@@ -163,7 +163,7 @@ def create_task():
         config=config,
         status='ACTIVE'
     )
-    print("DEBUG_VERSION_CHECK_123")
+    logger.info("DEBUG_VERSION_CHECK_123")
 
     db.session.add(task)
     db.session.flush()
@@ -219,7 +219,7 @@ def create_task():
             next_run = now + timedelta(days=days_ahead)
             next_run = next_run.replace(hour=9, minute=0, second=0, microsecond=0)
 
-    print("FINAL NEXT RUN:", next_run)
+    logger.info(f"FINAL NEXT RUN: {next_run}")
     # MANUAL → no schedule
     if next_run:
         task.next_run = next_run
