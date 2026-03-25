@@ -137,43 +137,80 @@ class NewsDigestWorkflow(WorkflowBase):
         
         return html
     
-    def send_email(self, to_email, subject, html_content):
-        """
-        Send email using SMTP
-        For development: Using Gmail SMTP (you need App Password)
-        """
-        try:
-            # Email configuration from environment variables
-            smtp_host = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
-            smtp_port = int(os.environ.get('SMTP_PORT', '587'))
-            smtp_user = os.environ.get('SMTP_USER', 'your-email@gmail.com')
-            smtp_password = os.environ.get('SMTP_PASSWORD', 'your-app-password')
-            from_email = os.environ.get('FROM_EMAIL', smtp_user)
+    # def send_email(self, to_email, subject, html_content):
+    #     """
+    #     Send email using SMTP
+    #     For development: Using Gmail SMTP (you need App Password)
+    #     """
+    #     try:
+    #         # Email configuration from environment variables
+    #         smtp_host = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
+    #         smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+    #         smtp_user = os.environ.get('SMTP_USER', 'your-email@gmail.com')
+    #         smtp_password = os.environ.get('SMTP_PASSWORD', 'your-app-password')
+    #         from_email = os.environ.get('FROM_EMAIL', smtp_user)
             
-            self.log_info(f"Sending email to {to_email}")
+    #         self.log_info(f"Sending email to {to_email}")
             
-            # Create message
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = from_email
-            msg['To'] = to_email
+    #         # Create message
+    #         msg = MIMEMultipart('alternative')
+    #         msg['Subject'] = subject
+    #         msg['From'] = from_email
+    #         msg['To'] = to_email
             
-            # Attach HTML content
-            html_part = MIMEText(html_content, 'html')
-            msg.attach(html_part)
+    #         # Attach HTML content
+    #         html_part = MIMEText(html_content, 'html')
+    #         msg.attach(html_part)
             
-            # Send email
-            with smtplib.SMTP(smtp_host, smtp_port) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_password)
-                server.send_message(msg)
+    #         # Send email
+    #         with smtplib.SMTP(smtp_host, smtp_port) as server:
+    #             server.starttls()
+    #             server.login(smtp_user, smtp_password)
+    #             server.send_message(msg)
             
-            self.log_info(f"Email sent successfully to {to_email}")
-            return True
+    #         self.log_info(f"Email sent successfully to {to_email}")
+    #         return True
             
-        except Exception as e:
-            self.log_error(f"Error sending email: {str(e)}")
-            raise
+    #     except Exception as e:
+    #         self.log_error(f"Error sending email: {str(e)}")
+    #         raise
+
+    import os
+    import requests
+
+    def send_email_sendgrid(to_email, subject, html_content):
+
+        url = "https://api.sendgrid.com/v3/mail/send"
+
+        headers = {
+            "Authorization": f"Bearer {os.getenv('SENDGRID_API_KEY')}",
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "personalizations": [
+                {
+                    "to": [{"email": to_email}]
+                }
+            ],
+            "from": {
+                "email": os.getenv("FROM_EMAIL")
+            },
+            "subject": subject,
+            "content": [
+                {
+                    "type": "text/html",
+                    "value": html_content
+                }
+            ]
+        }
+
+        response = requests.post(url, headers=headers, json=data)
+
+        if response.status_code >= 400:
+            raise Exception(f"SendGrid error: {response.text}")
+
+        return True
     
     def execute(self, config):
         """
@@ -216,7 +253,7 @@ class NewsDigestWorkflow(WorkflowBase):
             html_content = self.format_email_html(articles, category.title())
             
             # Send email
-            print(f"EMAIL MOCK → {email}")
+            self.send_email_sendgrid(email, subject, html_content)
             
             return True, f"Successfully sent {len(articles)} news articles to {email}", {
                 'articles_count': len(articles),
