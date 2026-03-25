@@ -47,6 +47,37 @@ def get_tasks():
         } for task in tasks]
     })
 
+def normalize_schedule(schedule):
+    if not schedule:
+        return "manual"
+
+    s = schedule.lower().strip()
+
+    if "minute" in s:
+        return "every_minute"
+
+    if "hour" in s:
+        return "every_hour"
+
+    if "day" in s or "daily" in s:
+        return "daily"
+
+    if "monday" in s:
+        return "every_monday"
+    if "tuesday" in s:
+        return "every_tuesday"
+    if "wednesday" in s:
+        return "every_wednesday"
+    if "thursday" in s:
+        return "every_thursday"
+    if "friday" in s:
+        return "every_friday"
+    if "saturday" in s:
+        return "every_saturday"
+    if "sunday" in s:
+        return "every_sunday"
+
+    return schedule  # preserve original if unknown
 
 @api_bp.route('/tasks', methods=['POST'])
 def create_task():
@@ -94,16 +125,23 @@ def create_task():
         except Exception as e:
             logger.warning(f"LLM planner failed: {str(e)}")
 
+    llm_schedule = schedule  # right after LLM block
+
     from app.core.intent_parser import extract_schedule
 
-    # SINGLE SOURCE OF TRUTH
-    if not schedule or schedule.strip() == "" or schedule == "manual":
-        schedule = extract_schedule(raw_text)
+    extracted = None
+    if not schedule or schedule.strip() == "":
+        extracted = extract_schedule(raw_text)
+        if extracted:
+            schedule = extracted
 
     # FINAL fallback
     if not schedule or schedule.strip() == "":
         schedule = "manual"
-
+    
+    print("RAW TEXT:", raw_text)
+    print("LLM RAW SCHEDULE:", llm_schedule)
+    print("EXTRACTED SCHEDULE:", extracted)
     print("FINAL SCHEDULE:", schedule)
 
     # -------------------------
@@ -113,8 +151,9 @@ def create_task():
     "email": user.email
     }
 
-    print("RAW TEXT:", raw_text)
-    print("FINAL SCHEDULE STORED:", schedule)
+    schedule = normalize_schedule(schedule)
+
+    print("NORMALIZED SCHEDULE:", schedule)
 
     task = Task(
         user_id=user.id,
@@ -140,35 +179,25 @@ def create_task():
     now = datetime.now(IST)
 
     next_run = None
-    if not isinstance(schedule, str):
-        schedule = ""
 
     # EVERY MINUTE
-    if schedule and "every minute" in schedule:
-
+    if schedule == "every_minute":
         next_run = now + timedelta(minutes=1)
 
     # EVERY HOUR
-    elif schedule and "every hour" in schedule:
-
+    elif schedule == "every_hour":
         next_run = now + timedelta(hours=1)
 
     # DAILY
-    elif schedule and "daily" in schedule:
-
+    elif schedule == "daily":
         next_run = now.replace(hour=9, minute=0, second=0, microsecond=0)
-
         if next_run <= now:
             next_run += timedelta(days=1)
 
-
     # WEEKLY
-    elif schedule and ("every_" in schedule or "every " in schedule):
-    
-        # normalize format
-        normalized = schedule.replace("every ", "every_").lower()
-        
-        day_name = normalized.replace("every_", "")
+    elif schedule.startswith("every_"):
+
+        day_name = schedule.replace("every_", "")
 
         days_map = {
             "monday":0,
@@ -181,9 +210,7 @@ def create_task():
         }
 
         if day_name in days_map:
-
             target_day = days_map[day_name]
-
             days_ahead = target_day - now.weekday()
 
             if days_ahead <= 0:
@@ -192,7 +219,7 @@ def create_task():
             next_run = now + timedelta(days=days_ahead)
             next_run = next_run.replace(hour=9, minute=0, second=0, microsecond=0)
 
-    print("NEXT RUN CALCULATED:", next_run)
+    print("FINAL NEXT RUN:", next_run)
     # MANUAL → no schedule
     if next_run:
         task.next_run = next_run
@@ -242,7 +269,7 @@ def get_task(task_id):
     logs = [{
         'id': log.id,
         'start_time': log.start_time.isoformat(),
-        'end_time': log.end_time.isoformat() if log.end_time else None,
+        'end_time': log.end_time.isoformat() if log.end_time else None, 
         'status': log.status,
         'message': log.message,
         'error_details': log.error_details,
