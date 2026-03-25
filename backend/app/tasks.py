@@ -131,6 +131,8 @@ def execute_workflow_task(self, task_id):
                 task.last_run = IST.localize(task.last_run)
 
             task.total_executions = (task.total_executions or 0) + 1
+            # SINGLE SOURCE OF TRUTH FOR NEXT RUN
+            task.next_run = calculate_next_run(task.schedule, now)
 
             # 🔥 RELEASE LOCK (CRITICAL FIX)
             task.status = "ACTIVE"
@@ -197,18 +199,6 @@ def execute_workflow_task(self, task_id):
         finally:
             from app import db
             db.session.remove()
-
-    from datetime import datetime
-    from pytz import timezone
-
-    IST = timezone("Asia/Kolkata")
-    now = datetime.now(IST)
-
-    task.last_run = now
-    task.total_executions = (task.total_executions or 0) + 1
-
-    # SINGLE SOURCE OF TRUTH
-    task.next_run = calculate_next_run(task.schedule, now)
         
 
 
