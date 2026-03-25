@@ -3,7 +3,7 @@ import { Plus, Trash2, Clock, CheckCircle, XCircle, Play, Pause, Activity, Trend
 import AIAssistant from "./AIAssistant";
 import HologramOrb from "./HologramOrb";
 
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+const API_URL = import.meta.env.VITE_API_URL || "https://uaos-backend.onrender.com/api";
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -47,7 +47,7 @@ function App() {
 
   const fetchTasks = async () => {
   try {
-    const res = await fetch(`${API_URL}/tasks`);
+    const res = await fetch(`${API_URL}/api/tasks`);
 
     if (!res.ok) {
       console.error("Tasks API failed:", res.status);
@@ -64,7 +64,7 @@ function App() {
 };
   const fetchLogs = async () => {
   try {
-    const res = await fetch(`${API_URL}/logs`);
+    const res = await fetch(`${API_URL}/api/logs`);
 
     if (!res.ok) {
       console.error("Logs API failed:", res.status);
@@ -82,7 +82,7 @@ function App() {
 
   const fetchStats = async () => {
   try {
-    const res = await fetch(`${API_URL}/stats`);
+    const res = await fetch(`${API_URL}/api/stats`);
 
     if (!res.ok) {
       console.error("Stats API failed:", res.status);
@@ -109,7 +109,7 @@ function App() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/tasks`, {
+      const res = await fetch(`${API_URL}/api/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -132,7 +132,7 @@ function App() {
 
   const deleteTask = async (taskId) => {
     try {
-      await fetch(`${API_URL}/tasks/${taskId}`, { method: 'DELETE' });
+      await fetch(`${API_URL}/api/tasks/${taskId}`, { method: 'DELETE' });
       fetchTasks();
       fetchStats();
     } catch (err) {
@@ -143,7 +143,7 @@ function App() {
   const toggleTaskStatus = async (taskId, currentStatus) => {
     const newStatus = currentStatus === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
     try {
-      await fetch(`${API_URL}/tasks/${taskId}`, {
+      await fetch(`${API_URL}/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -156,7 +156,7 @@ function App() {
 
   const executeTaskNow = async (taskId) => {
     try {
-      await fetch(`${API_URL}/tasks/${taskId}/execute`, { method: 'POST' });
+      await fetch(`${API_URL}/api/tasks/${taskId}/execute`, { method: 'POST' });
       setTimeout(() => {
         fetchTasks();
         fetchLogs();
