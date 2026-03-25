@@ -463,7 +463,7 @@ def ai_assistant():
     message = data.get("message", "")
 
     from app.core.intent_parser import parse_task_intent_v2
-    from app.core.intent_parser import extract_schedule
+    from app.core.intent_parser import advanced_parser
     from app.models import Task, User
     from app import db
 
@@ -475,7 +475,7 @@ def ai_assistant():
 
         user = User.query.first()
 
-        schedule = extract_schedule(message)
+        schedule, _ = advanced_parser.extract_schedule(message)
 
         task = Task(
             raw_text=message,
