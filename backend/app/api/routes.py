@@ -105,30 +105,45 @@ def create_task():
     # FALLBACK PARSER
     # -------------------------
 
-    if not workflow_type:
+    from app.core.intent_parser import extract_schedule
 
-        from app.core.intent_parser import parse_task_intent_v2, extract_schedule
+    raw_lower = raw_text.lower()
 
-        workflow_type, config, explanation, confidence = parse_task_intent_v2(raw_text)
+    # 🔥 STEP 1 — try parser
+    schedule = schedule if schedule else extract_schedule(raw_text)
 
-        schedule = extract_schedule(raw_text) or ""
+    # 🔥 STEP 2 — strong fallback (only if still empty)
+    if not schedule or schedule.strip() == "":
+        
+        if "every minute" in raw_lower:
+            schedule = "every minute"
 
-        print("PARSED:", workflow_type, confidence, explanation)
+        elif "every hour" in raw_lower:
+            schedule = "every hour"
 
-        ALLOWED_WORKFLOWS = [
-            "NEWS_DIGEST",
-            "FILE_CLEANUP",
-            "INVOICE_SYNC",
-            "DOCUMENT_SUMMARY",
-            "EMAIL_REPORT"
-        ]
+        elif "daily" in raw_lower:
+            schedule = "daily"
 
-        if workflow_type not in ALLOWED_WORKFLOWS or confidence < 0.65:
-            return jsonify({
-                "error": "Could not understand the task clearly. Try being more specific."
-            }), 400
+        elif "every monday" in raw_lower:
+            schedule = "every_monday"
+
+        elif "every tuesday" in raw_lower:
+            schedule = "every_tuesday"
+
+        elif "every wednesday" in raw_lower:
+            schedule = "every_wednesday"
+
+        elif "every thursday" in raw_lower:
+            schedule = "every_thursday"
+
+        elif "every friday" in raw_lower:
+            schedule = "every_friday"
+
+        else:
+            schedule = "manual"
 
     print("FINAL SCHEDULE:", schedule)
+
 
     # -------------------------
     # CREATE TASK
