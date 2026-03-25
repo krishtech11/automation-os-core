@@ -109,10 +109,11 @@ def create_task():
 
     raw_lower = raw_text.lower()
 
-    # 🔥 STEP 1 — try parser
-    schedule = schedule if schedule else extract_schedule(raw_text)
+    # 🔥 ALWAYS try parser if LLM failed
+    if not schedule or schedule.strip() == "" or schedule == "manual":
+        schedule = extract_schedule(raw_text)
 
-    # 🔥 STEP 2 — strong fallback (only if still empty)
+    # 🔥 FINAL fallback (guaranteed detection)
     if not schedule or schedule.strip() == "":
         
         if "every minute" in raw_lower:
@@ -143,7 +144,6 @@ def create_task():
             schedule = "manual"
 
     print("FINAL SCHEDULE:", schedule)
-
 
     # -------------------------
     # CREATE TASK
@@ -227,12 +227,6 @@ def create_task():
 
             next_run = now + timedelta(days=days_ahead)
             next_run = next_run.replace(hour=9, minute=0, second=0, microsecond=0)
-
-    elif "every_friday" in schedule:
-        days_ahead = 4 - now.weekday()  # Friday = 4
-        if days_ahead <= 0:
-            days_ahead += 7
-        task.next_run = now + timedelta(days=days_ahead)
 
 
     # MANUAL → no schedule
