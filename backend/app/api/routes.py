@@ -54,6 +54,7 @@ def create_task():
 
     if not data or 'raw_text' not in data:
         return jsonify({'error': 'raw_text is required'}), 400
+    
 
     # demo user
     user = User.query.filter_by(email="demo@uaos.com").first()
@@ -126,29 +127,15 @@ def create_task():
             return jsonify({
                 "error": "Could not understand the task clearly. Try being more specific."
             }), 400
-        
-    # 🔥 FORCE SCHEDULE FIX (FINAL, GUARANTEED)
-
-    raw_lower = raw_text.lower()
-
-    if "every minute" in raw_lower:
-        schedule = "every minute"
-
-    elif "every hour" in raw_lower:
-        schedule = "every hour"
-
-    elif "daily" in raw_lower:
-        schedule = "daily"
-
-    elif not schedule or schedule.strip() == "":
-        schedule = "manual"
 
     print("FINAL SCHEDULE:", schedule)
 
     # -------------------------
     # CREATE TASK
     # -------------------------
-    config['email'] = "your_email@gmail.com"
+    config = {
+    "email": user.email
+    }
 
     task = Task(
         user_id=user.id,
@@ -158,6 +145,7 @@ def create_task():
         config=config,
         status='ACTIVE'
     )
+    
 
     db.session.add(task)
     db.session.flush()
