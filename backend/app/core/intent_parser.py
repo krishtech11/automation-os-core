@@ -118,20 +118,26 @@ class AdvancedIntentParser:
     
     def extract_schedule(self, text: str):
         if not text:
-            return 'manual', None
+            return "manual", None
 
         t = text.lower().strip()
 
+        # FORCE LOG (important)
+        logger.info(f"[PARSER INPUT]: {t}")
+
         # --- DAILY ---
         if "daily" in t or "everyday" in t or "every day" in t:
-            return "daily", {'hour': 9, 'minute': 0}
+            logger.info("[MATCH]: DAILY")
+            return "daily", {"hour": 9, "minute": 0}
 
         # --- HOURLY ---
         if "every hour" in t or "hourly" in t:
+            logger.info("[MATCH]: HOURLY")
             return "every_hour", None
 
         # --- MINUTE ---
         if "every minute" in t:
+            logger.info("[MATCH]: MINUTE")
             return "every_minute", None
 
         # --- WEEKLY ---
@@ -142,9 +148,11 @@ class AdvancedIntentParser:
 
         for day in days:
             if f"every {day}" in t or day in t:
-                return f"every_{day}", {'hour': 9, 'minute': 0}
+                logger.info(f"[MATCH]: {day.upper()}")
+                return f"every_{day}", {"hour": 9, "minute": 0}
 
-        return 'manual', None
+        logger.warning("[MATCH]: NONE → returning manual")
+        return "manual", None
     
     def extract_category(self, text: str) -> str:
         """Extract news category"""

@@ -131,13 +131,18 @@ def create_task():
 
     extracted = None
 
-    if not schedule or schedule.strip() == "":
-        schedule_str, _ = advanced_parser.extract_schedule(raw_text)
-        
+    if not schedule or schedule.strip() == "" or schedule == "manual":
+
+        schedule_str, time_info = advanced_parser.extract_schedule(raw_text)
+
+        logger.info(f"PARSER RETURNED: {schedule_str}, TIME: {time_info}")
+
         if schedule_str and schedule_str != "manual":
             extracted = schedule_str
             schedule = extracted
-
+        else:
+            logger.warning("Parser failed → staying manual")
+            
     # FINAL fallback
     if not schedule or schedule.strip() == "":
         schedule = "manual"
