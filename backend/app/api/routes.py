@@ -127,12 +127,15 @@ def create_task():
 
     llm_schedule = schedule  # right after LLM block
 
-    from app.core.intent_parser import extract_schedule
+    from app.core.intent_parser import advanced_parser
 
     extracted = None
+
     if not schedule or schedule.strip() == "":
-        extracted = extract_schedule(raw_text)
-        if extracted:
+        schedule_str, _ = advanced_parser.extract_schedule(raw_text)
+        
+        if schedule_str and schedule_str != "manual":
+            extracted = schedule_str
             schedule = extracted
 
     # FINAL fallback
