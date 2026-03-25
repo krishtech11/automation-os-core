@@ -124,7 +124,7 @@ def create_task():
         config=config,
         status='ACTIVE'
     )
-    
+    print("DEBUG_VERSION_CHECK_123")
 
     db.session.add(task)
     db.session.flush()
