@@ -327,19 +327,31 @@ def parse_task_intent_v2(raw_text: str) -> Tuple[str, Dict, str, float]:
 import re
 
 def extract_schedule(text):
+    if not text:
+        return None
 
-    text = text.lower()
+    t = text.lower().strip()
 
-    if "every friday" in text:
-        return "every friday"
-
-    if "every monday" in text:
-        return "every monday"
-
-    if "daily" in text or "every day" in text:
+    # --- DAILY ---
+    if "daily" in t or "everyday" in t or "every day" in t:
         return "daily"
 
-    if "every hour" in text:
-        return "hourly"
+    # --- HOURLY ---
+    if "every hour" in t or "hourly" in t:
+        return "every_hour"
 
-    return "manual"
+    # --- MINUTE ---
+    if "every minute" in t:
+        return "every_minute"
+
+    # --- WEEKLY ---
+    days = [
+        "monday", "tuesday", "wednesday",
+        "thursday", "friday", "saturday", "sunday"
+    ]
+
+    for day in days:
+        if f"every {day}" in t or day in t:
+            return f"every_{day}"
+
+    return None
