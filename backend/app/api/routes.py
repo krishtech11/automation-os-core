@@ -386,75 +386,91 @@ def get_scheduled_jobs():
 
 @api_bp.route('/logs', methods=['GET'])
 def get_recent_logs():
+    try:
+        logs = ExecutionLog.query.order_by(
+            ExecutionLog.start_time.desc()
+        ).limit(50).all()
 
-    logs = ExecutionLog.query.order_by(
-        ExecutionLog.start_time.desc()
-    ).limit(50).all()
+        result = []
 
-    return jsonify({
-        'logs': [{
-            'id': log.id,
-            'task_id': log.task_id,
+        for log in logs:
+            try:
+                result.append({
+                    'id': log.id,
+                    'task_id': log.task_id,
 
-            # 🔧 FIX 4 — safe task text access
-            'task_text': (
-                log.task.raw_text[:50] + '...'
-                if log.task and len(log.task.raw_text) > 50
-                else (log.task.raw_text if log.task else "Deleted Task")
-            ),
+                    # SAFE task text
+                    'task_text': (
+                        log.task.raw_text[:50] + '...'
+                        if log.task and log.task.raw_text and len(log.task.raw_text) > 50
+                        else (log.task.raw_text if log.task and log.task.raw_text else "Deleted Task")
+                    ),
 
-            'start_time': log.start_time.isoformat(),
-            'end_time': log.end_time.isoformat() if log.end_time else None,
-            'status': log.status,
-            'message': log.message,
-            'duration': (log.end_time - log.start_time).total_seconds()
-            if log.end_time and log.start_time else None
-        } for log in logs]
-    })
+                    # SAFE datetime
+                    'start_time': log.start_time.isoformat() if log.start_time else None,
+                    'end_time': log.end_time.isoformat() if log.end_time else None,
+
+                    'status': log.status,
+                    'message': log.message,
+
+                    # SAFE duration
+                    'duration': (
+                        (log.end_time - log.start_time).total_seconds()
+                        if log.end_time and log.start_time else None
+                    )
+                })
+            except Exception as inner_error:
+                logger.warning(f"Skipping broken log {log.id}: {inner_error}")
+
+        return jsonify({'logs': result}), 200
+
+    except Exception as e:
+        logger.error(f"ERROR in /logs: {e}")
+        return jsonify({'logs': []}), 200
 
 
 @api_bp.route('/stats', methods=['GET'])
 def get_stats():
+    try:
+        total_tasks = Task.query.count()
+        active_tasks = Task.query.filter_by(status="ACTIVE").count()
 
-    total_tasks = Task.query.count()
-    active_tasks = Task.query.filter_by(status='ACTIVE').count()
-    paused_tasks = Task.query.filter_by(status='PAUSED').count()
-    failed_tasks = Task.query.filter_by(status='FAILED').count()
+        total_executions = ExecutionLog.query.count()
 
-    total_executions = db.session.query(
-        db.func.sum(Task.total_executions)
-    ).scalar() or 0
+        from datetime import datetime
+        from pytz import timezone
+        IST = timezone("Asia/Kolkata")
+        today_start = datetime.now(IST).replace(hour=0, minute=0, second=0, microsecond=0)
 
-    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_executions = ExecutionLog.query.filter(
+            ExecutionLog.start_time >= today_start
+        ).count()
 
-    today_executions = ExecutionLog.query.filter(
-        ExecutionLog.start_time >= today_start
-    ).count()
+        return jsonify({
+            "tasks": {
+                "total": total_tasks,
+                "active": active_tasks
+            },
+            "executions": {
+                "total": total_executions,
+                "today": today_executions
+            }
+        }), 200
 
-    successful_today = ExecutionLog.query.filter(
-        ExecutionLog.start_time >= today_start,
-        ExecutionLog.status == 'SUCCESS'
-    ).count()
+    except Exception as e:
+        logger.error(f"ERROR in /stats: {e}")
 
-    failed_today = ExecutionLog.query.filter(
-        ExecutionLog.start_time >= today_start,
-        ExecutionLog.status == 'FAILED'
-    ).count()
-
-    return jsonify({
-        'tasks': {
-            'total': total_tasks,
-            'active': active_tasks,
-            'paused': paused_tasks,
-            'failed': failed_tasks
-        },
-        'executions': {
-            'total': int(total_executions),
-            'today': today_executions,
-            'successful_today': successful_today,
-            'failed_today': failed_today
-        }
-    })
+        # 🔥 SAFE FALLBACK
+        return jsonify({
+            "tasks": {
+                "total": 0,
+                "active": 0
+            },
+            "executions": {
+                "total": 0,
+                "today": 0
+            }
+        }), 200
 
 @api_bp.route('/assistant', methods=['POST'])
 def ai_assistant():

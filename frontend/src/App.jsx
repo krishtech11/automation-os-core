@@ -46,34 +46,63 @@ function App() {
 }, []);
 
   const fetchTasks = async () => {
-    try {
-      const res = await fetch(`${API_URL}/tasks`);
-      const data = await res.json();
-      setTasks(data.tasks);
-    } catch (err) {
-      console.error('Error:', err);
-    }
-  };
+  try {
+    const res = await fetch(`${API_URL}/tasks`);
 
-  const fetchLogs = async () => {
-    try {
-      const res = await fetch(`${API_URL}/logs`);
-      const data = await res.json();
-      setLogs(data.logs);
-    } catch (err) {
-      console.error('Error:', err);
+    if (!res.ok) {
+      console.error("Tasks API failed:", res.status);
+      setTasks([]);
+      return;
     }
-  };
+
+    const data = await res.json();
+    setTasks(data.tasks || []);
+  } catch (err) {
+    console.error('Error:', err);
+    setTasks([]);
+  }
+};
+  const fetchLogs = async () => {
+  try {
+    const res = await fetch(`${API_URL}/logs`);
+
+    if (!res.ok) {
+      console.error("Logs API failed:", res.status);
+      setLogs([]);
+      return;
+    }
+
+    const data = await res.json();
+    setLogs(data.logs || []);
+  } catch (err) {
+    console.error('Error:', err);
+    setLogs([]);
+  }
+};
 
   const fetchStats = async () => {
-    try {
-      const res = await fetch(`${API_URL}/stats`);
-      const data = await res.json();
-      setStats(data);
-    } catch (err) {
-      console.error('Error:', err);
+  try {
+    const res = await fetch(`${API_URL}/stats`);
+
+    if (!res.ok) {
+      console.error("Stats API failed:", res.status);
+      setStats(null);
+      return;
     }
-  };
+
+    const data = await res.json();
+
+    // SAFE STRUCTURE
+    setStats({
+      tasks: data.tasks || { total: 0, active: 0 },
+      executions: data.executions || { total: 0, today: 0 }
+    });
+
+  } catch (err) {
+    console.error('Error:', err);
+    setStats(null);
+  }
+};
 
   const createTask = async () => {
     if (!newTaskText.trim()) return;
@@ -174,7 +203,7 @@ function App() {
   });
   };
 
-  const filteredTasks = tasks.filter(task => {
+  const filteredTasks = (tasks || []).filter(task => {
     const matchesFilter = filterStatus === 'all' || task.status === filterStatus;
     const matchesSearch = task.raw_text.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
@@ -206,7 +235,7 @@ function App() {
         </div>
 
         {/* Stats Cards */}
-        {stats && (
+        {stats && stats.tasks && stats.executions && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-6 hover:border-blue-400/40 transition-all">
               <div className="flex items-center justify-between mb-3">
@@ -299,7 +328,7 @@ function App() {
                   : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50'
               }`}
             >
-              Tasks ({filteredTasks.length})
+              Tasks ({(filteredTasks || []).length})
             </button>
             <button
               onClick={() => setActiveTab('logs')}
@@ -309,7 +338,7 @@ function App() {
                   : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50'
               }`}
             >
-              Execution Logs ({logs.length})
+              Execution Logs ({(logs || []).length})
             </button>
           </div>
 
@@ -342,13 +371,13 @@ function App() {
         {/* Tasks Tab */}
         {activeTab === 'tasks' && (
           <div className="space-y-4">
-            {filteredTasks.length === 0 ? (
+            {(filteredTasks || []).length === 0 ? (
               <div className="text-center py-16 bg-slate-900/30 backdrop-blur-sm border border-slate-700/30 rounded-2xl">
                 <AlertCircle size={48} className="mx-auto mb-4 text-slate-600" />
                 <p className="text-slate-400 text-lg">No tasks found. Create your first automation above!</p>
               </div>
             ) : (
-              filteredTasks.map((task) => (
+              (filteredTasks || []).map((task) => (
                 <div
                   key={task.id}
                   className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-slate-600/50 transition-all shadow-xl"
@@ -416,13 +445,13 @@ function App() {
         {/* Logs Tab */}
         {activeTab === 'logs' && (
           <div className="space-y-3">
-            {logs.length === 0 ? (
+            {(logs || []).length === 0 ? (
               <div className="text-center py-16 bg-slate-900/30 backdrop-blur-sm border border-slate-700/30 rounded-2xl">
                 <Activity size={48} className="mx-auto mb-4 text-slate-600" />
                 <p className="text-slate-400 text-lg">No execution logs yet.</p>
               </div>
             ) : (
-              logs.map((log) => (
+              (logs || []).map((log) => (
                 <div
                   key={log.id}
                   className={`p-5 rounded-xl border-l-4 backdrop-blur-sm ${
