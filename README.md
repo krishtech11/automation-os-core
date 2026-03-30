@@ -1,7 +1,11 @@
 # 🚀 UAOS - Unified AI Automation Operating System
 
-> ⚡ AI-powered automation OS that converts natural language into scheduled, multi-step workflows — with real-time execution and distributed processing.
-> > Think: Zapier + Airflow + Local AI — built from scratch.
+## 🌐 Live Demo
+
+👉 https://automation-os-frontend.vercel.app
+
+> ⚡ AI-powered automation system that converts natural language into scheduled, multi-step workflows with real-time execution.
+> ⚡ Inspired by Zapier (automation), Airflow (orchestration), and local LLMs — unified into a single system.
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![React](https://img.shields.io/badge/React-18.0+-61DAFB.svg)](https://reactjs.org/)
@@ -10,8 +14,9 @@
 ## 📋 Table of Contents
 
 - [Overview](#overview)
-- [System Highlights](#System-highlights)
+- [System Highlights](#system-highlights)
 - [Key Features](#key-features)
+- [Key Engineering Concepts](#key-engineering-concepts)
 - [Project Structure](#project-structure)
 - [Architecture](#architecture)
 - [Scheduling Strategy](#scheduling-strategy)
@@ -20,7 +25,7 @@
 - [Quick Start](#quick-start)
 - [Workflows](#workflows)
 - [System Capabilities](#system-capabilities)
-- [System Design Decisions](#system-design--decisions)
+- [System Design Decisions](#system-design-decisions)
 - [Engineering Challenges & Solutions](#engineering-challenges--solutions)
 - [Screenshots](#screenshots)
 - [API Documentation](#api-documentation)
@@ -38,9 +43,10 @@ It functions as a lightweight alternative to tools like Zapier and Airflow, enha
 
 ### 🚀 Live System
 
-- 🌐 Frontend: [https://your-vercel-link.vercel.app](https://automation-os-frontend.vercel.app/)
-- 🔗 Backend API: [https://your-render-backend.onrender.com/api](https://uaos-backend.onrender.com)
-> ⚠️ Note: Backend may take ~30–60 seconds to wake up (Render free tier)
+- 🌐 Frontend: https://automation-os-frontend.vercel.app
+- 🔗 Backend API: https://uaos-backend.onrender.com/api
+
+> ⚠️ Backend may take 30–60s to wake up (Render free tier)
 
 ### Problem Statement
 
@@ -134,6 +140,14 @@ A full-stack platform combining:
 - ✅ Email workflows operational
 - 🚧 Upcoming: Multi-user support, visual workflow builder
 
+## 🧠 Key Engineering Concepts
+
+- Distributed task queues (Celery + Redis)
+- DB-driven scheduling system
+- Fault-tolerant workflow execution
+- LLM + rule-based hybrid architecture
+- Service-oriented system design
+
 ## 📂 Project Structure
 
 ```text
@@ -142,52 +156,71 @@ UAOS/
 ├── backend/                         # Flask backend API
 │   │
 │   ├── app/
-│   │   ├── __init__.py               # Flask app factory
-│   │   ├── models.py                 # Database models
+│   │   ├── __init__.py              # Flask app factory
+│   │   ├── models.py                # Database models
+│   │   ├── celery_app.py            # Celery app configuration
+│   │   ├── tasks.py                 # Background task definitions
 │   │   │
-│   │   ├── api/                      # REST API routes
-│   │   │   └── routes.py
+│   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   └── routes.py            # REST API routes
 │   │   │
-│   │   ├── core/                     # Core system logic
-│   │   │   ├── llm_planner_free.py   # Ollama LLM workflow planner
-│   │   │   ├── scheduler.py          # Deprecated / legacy scheduler (optional)
-│   │   │   └── celery_scheduler.py   # Celery task scheduling
+│   │   ├── core/
+│   │   │   ├── __init__.py
+│   │   │   ├── intent_parser.py     # Rule-based intent parsing
+│   │   │   ├── llm_planner_free.py  # LLM workflow planner
+│   │   │   └── celery_scheduler.py  # DB-driven scheduler
 │   │   │
-│   │   ├── engines/                  # Automation engines
+│   │   ├── engines/
 │   │   │   ├── file_engine.py
 │   │   │   └── desktop_engine.py
 │   │   │
-│   │   ├── workflows/                # Workflow implementations
+│   │   ├── workflows/
 │   │   │   ├── base.py
 │   │   │   ├── news_digest.py
 │   │   │   ├── file_cleanup.py
-│   │   │   └── invoice_sync.py
+│   │   │   ├── invoice_sync.py
+│   │   │   ├── document_summary.py
+│   │   │   └── email_report.py
 │   │
-│   ├── celery_worker.py              # legacy entrypoint (current: app.celery_app)
-│   ├── config.py                     # Environment configuration
-│   ├── run.py                        # Flask application launcher
+│   ├── config.py                    # Environment configuration
+│   ├── run.py                       # Flask app entrypoint
+│   ├── celery_beat.py               # Scheduler entrypoint
 │   └── requirements.txt
 │
-├── frontend/                         # React dashboard
+├── frontend/                        # React (Vite) dashboard
 │   │
 │   ├── src/
-│   │   ├── App.jsx                   # Main dashboard UI
-│   │   ├── api.js                    # API communication layer
-│   │   └── components/               # Reusable UI components
+│   │   ├── App.jsx                  # Main UI
+│   │   ├── main.jsx                 # Entry point
+│   │   ├── assets/                  # Static assets
+│   │   ├── AIAssistant.jsx          # AI assistant panel
+│   │   ├── AIOrb.jsx                # UI component
+│   │   ├── HologramOrb.jsx          # UI component
+│   │   ├── index.css
+│   │   └── app.css
 │   │
+│   ├── index.html
 │   ├── package.json
-│   └── vite.config.js
+│   ├── tailwind.config.js
+│   ├── postcss.config.cjs
+│   └── .env.example
 │
-├── docs/                             # Documentation
+├── docs/                            # Documentation
 │   ├── API.md
 │   ├── DEPLOYMENT.md
 │   └── screenshots/
 │       ├── dashboard.png
-│       ├── create-task.png
-│       └── logs.png
+│       ├── Task_created.png
+│       └── Execution_logs.png
 │
-├── docker-compose.yml                # Container orchestration
-├── .env.example                      # Environment variables template
+├── docker/                          # Docker configs (optional)
+  └── docker-compose.yml             # Multi-service setup          
+│             
+├── render.yaml                      # Render deployment config
+├── CONTRIBUTING.md
+├── LICENSE
+├── .env.example
 ├── .gitignore
 └── README.md
 ```
@@ -247,7 +280,7 @@ UAOS/
                                    └──────────────────────┘
 
 ```
-> ⚠️ In production, services are deployed independently (API, workers, scheduler) for scalability.
+> ⚠️ In production, each component (API, worker, scheduler) runs as an independent service for scalability and fault isolation.
 
 ### 🔄 Scheduling Strategy
 
@@ -346,8 +379,6 @@ H --> J[Store in Database]
 - **Styling:** Tailwind CSS
 - **Icons:** Lucide React
 - **State:** React Hooks
-- React + Vite
-- Tailwind CSS
 
 ### APIs & Services
 - NewsAPI (news aggregation)
@@ -382,7 +413,7 @@ H --> J[Store in Database]
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/krishtech11/UAOS.git
+git clone https://github.com/krishtech11/automation-os-core.git
 cd UAOS
 ```
 
@@ -458,10 +489,7 @@ cd backend && celery -A app.celery_app beat --loglevel=info
 ```
 
 ### 7. Access Dashboard
-Open http://localhost:3000
-
-# Create .env file (IMPORTANT)
-cp .env.example .env
+👉 https://automation-os-frontend.vercel.app
 
 # Configure SendGrid (for email workflows)
 SENDGRID_API_KEY=your_key_here
@@ -574,119 +602,36 @@ SENDGRID_API_KEY=your_key_here
 
 ---
 
-## 🧠 Key Engineering Concepts Demonstrated
-
-- Distributed task queues (Celery + Redis)
-- DB-driven scheduling system
-- LLM + rule-based hybrid architecture
-- Fault-tolerant execution with retries
-- Asynchronous system design
-
 ## 📸 Screenshots
 
 **Dashboard Overview**
 ![Dashboard](docs/screenshots/dashboard.png)
+**Dashboard (Alternate)**
+![Dashboard](docs/screenshots/dashboard1.png)
 
 **Task Creation**
-![Create Task](docs/screenshots/create-task.png)
+![Create Task](docs/screenshots/Task_created.png)
+**Task Creation Alternate**
+![Create Task](docs/screenshots/Task_created2.png)
 
 **Execution Logs**
-![Logs](docs/screenshots/logs.png)
+![Logs](docs/screenshots/Execution_logs.png)
 
 ---
 
 ## 📖 API Documentation
 
-### Base URL
+Full API reference is available here:
 
-- Local: http://localhost:5000/api  
-- Production: https://your-render-url.onrender.com/api
-
-### Endpoints
-
-#### Create Task
-```http
-POST /api/tasks
-Content-Type: application/json
-
-{
-  "raw_text": "Send me tech news daily",
-  "schedule": "daily",
-  "use_llm": true
-}
-
-Response: 201 Created
-{
-  "id": 1,
-  "message": "Task created successfully",
-  "task": {
-    "id": 1,
-    "parsed_type": "NEWS_DIGEST",
-    "schedule": "daily_18_0",
-    "confidence": 0.95,
-    "next_run": "2026-02-23T18:00:00+05:30"
-  }
-}
-```
-
-#### Get Tasks
-```http
-GET /api/tasks
-
-Response: 200 OK
-{
-  "tasks": [
-    {
-      "id": 1,
-      "raw_text": "Send me tech news daily",
-      "parsed_type": "NEWS_DIGEST",
-      "status": "ACTIVE",
-      "next_run": "2026-02-23T18:00:00+05:30",
-      "total_executions": 5
-    }
-  ]
-}
-```
-
-#### Execute Task Manually
-```http
-POST /api/tasks/{id}/execute
-
-Response: 200 OK
-{
-  "message": "Task execution triggered",
-  "task_id": 1
-}
-```
-
-#### Get Execution Logs
-```http
-GET /api/logs
-
-Response: 200 OK
-{
-  "logs": [
-    {
-      "id": 1,
-      "task_id": 1,
-      "status": "SUCCESS",
-      "message": "Sent 10 news articles",
-      "start_time": "2026-02-22T18:00:00+05:30",
-      "duration": 2.5
-    }
-  ]
-}
-```
-
-[Full API Documentation](docs/API.md)
+👉 [View API Docs](docs/API.md)
 
 
-## Example Automations
+## 🧪 Example Automations
 
 
-- Send me top 10 tech news every Friday at 6 PM  
-- Clean my Downloads folder PDFs daily at 11 PM  
-- Sync Gmail invoices to Drive every Monday  
+- Send me top 10 tech news every Friday at 6 PM 
+- Send me tech news every minute 
+- Clean my Downloads folder PDFs daily  
 
 ---
 
@@ -703,24 +648,17 @@ UAOS is designed as a **multi-service distributed system** consisting of:
 Each component is deployed independently for scalability.
 > ⚠️ Note: UAOS requires multiple services (worker + scheduler + broker) and is deployed as a distributed system.
 
+For detailed deployment steps:
+
+👉 [View Deployment Guide](docs/DEPLOYMENT.md)
+
 ### 🌍 Live Deployment
 
-- Frontend (Vercel): https://your-link.vercel.app
-- Backend (Render): https://your-backend.onrender.com
+- Frontend (Vercel): https://automation-os-frontend.vercel.app
+- Backend (Render): https://uaos-backend.onrender.com
 
 > Note: Free-tier services may have cold start delays.
 
-### Docker Deployment
-```bash
-# Build images
-docker-compose build
-
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-```
 
 ## 🤝 Contributing
 
