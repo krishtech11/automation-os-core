@@ -1,6 +1,7 @@
 # 🚀 UAOS - Unified AI Automation Operating System
 
->AI-powered distributed automation system that converts natural language into executable, scheduled workflows using LLM planning and asynchronous task execution.
+> ⚡ AI-powered automation OS that converts natural language into scheduled, multi-step workflows — with real-time execution and distributed processing.
+> > Think: Zapier + Airflow + Local AI — built from scratch.
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![React](https://img.shields.io/badge/React-18.0+-61DAFB.svg)](https://reactjs.org/)
@@ -31,11 +32,27 @@
 
 ## 🎯 Overview
 
-UAOS is an AI-powered automation platform prototype that converts natural language commands into executable workflows. Users can create and schedule complex automations without writing code, powered by machine learning intent classification and LLM-based multi-step planning.
+UAOS is a distributed automation operating system that converts natural language into executable workflows with scheduling, monitoring, and fault-tolerant execution.
+
+It functions as a lightweight alternative to tools like Zapier and Airflow, enhanced with AI-driven workflow generation.
+
+### 🚀 Live System
+
+- 🌐 Frontend: [https://your-vercel-link.vercel.app](https://automation-os-frontend.vercel.app/)
+- 🔗 Backend API: [https://your-render-backend.onrender.com/api](https://uaos-backend.onrender.com)
+> ⚠️ Note: Backend may take ~30–60 seconds to wake up (Render free tier)
 
 ### Problem Statement
 
 Manual automation setup is time-consuming and requires technical knowledge. UAOS bridges this gap by enabling natural language task creation with intelligent workflow decomposition.
+
+### Why UAOS?
+
+Existing tools like Zapier require manual setup and lack transparency in execution.  
+UAOS focuses on:
+- AI-driven workflow creation
+- Full execution visibility
+- Local-first LLM support (no API cost)
 
 ### Solution
 
@@ -65,6 +82,12 @@ A full-stack platform combining:
   - JSON repair for LLM outputs
   - Retry mechanisms with exponential backoff
   - Execution logging with failure tracking
+ 
+- 🧠 **Natural Language → Executable Workflows**
+  - Converts user intent into structured automation pipelines
+
+- 📊 **Execution Observability**
+  - Tracks task status, execution time, and logs in real-time dashboard
 
 - ⚙️ **Production-Oriented Design**
   - Connection pooling fixes for PostgreSQL
@@ -88,11 +111,28 @@ A full-stack platform combining:
 - Natural language schedule parsing: *"every Friday at 6 PM"*
 - Timezone-aware (Asia/Kolkata)
 
+### 📡 Real-Time System Visibility
+- Execution logs with status tracking (SUCCESS / FAILED / RETRY)
+- Task-level monitoring with timestamps and duration
+
+### 🔐 Production Stability Features
+- API normalization between frontend and backend
+- Defensive handling for undefined/null frontend states
+- Schedule validation and normalization
+
 ### 📈 Production-Ready Architecture
 - Distributed workers with Celery
 - Redis message broker
 - PostgreSQL persistence
 - Execution logging and monitoring
+
+## 📌 Current Status
+
+- ✅ Fully deployed (Frontend + Backend)
+- ✅ Scheduler and workers running in production
+- ✅ Stable task creation and execution
+- ✅ Email workflows operational
+- 🚧 Upcoming: Multi-user support, visual workflow builder
 
 ## 📂 Project Structure
 
@@ -207,6 +247,8 @@ UAOS/
                                    └──────────────────────┘
 
 ```
+> ⚠️ In production, services are deployed independently (API, workers, scheduler) for scalability.
+
 ### 🔄 Scheduling Strategy
 
 Unlike traditional cron-based systems, UAOS uses a **database-driven scheduling model**:
@@ -258,6 +300,12 @@ P --> Q[Execution Logs]
 Q --> R[Dashboard Monitoring]
 
 ```
+### 🛡️ Planning Reliability Enhancements
+
+- JSON repair for malformed LLM outputs
+- Validation layer before task creation
+- Fallback to rule-based parser on failure
+- Retry mechanism for unstable planning outputs
 
 ## 🔍 LLM Planning Logic
 
@@ -298,12 +346,28 @@ H --> J[Store in Database]
 - **Styling:** Tailwind CSS
 - **Icons:** Lucide React
 - **State:** React Hooks
+- React + Vite
+- Tailwind CSS
 
 ### APIs & Services
 - NewsAPI (news aggregation)
 - Gmail API (email operations)
 - Google Drive API (cloud storage)
 - Ollama (local LLM - FREE)
+
+### Deployment
+- Backend: Render
+- Frontend: Vercel
+
+### Core Infrastructure
+- Flask (API layer)
+- PostgreSQL (persistent storage)
+- Redis (message broker)
+- Celery (distributed workers + scheduling)
+
+### AI Layer
+- Ollama (local LLM execution)
+- TF-IDF (intent classification fallback)
 
 ---
 
@@ -319,7 +383,7 @@ H --> J[Store in Database]
 ### 1. Clone Repository
 ```bash
 git clone https://github.com/krishtech11/UAOS.git
-cd uaos
+cd UAOS
 ```
 
 ### 2. Backend Setup
@@ -395,6 +459,12 @@ cd backend && celery -A app.celery_app beat --loglevel=info
 
 ### 7. Access Dashboard
 Open http://localhost:3000
+
+# Create .env file (IMPORTANT)
+cp .env.example .env
+
+# Configure SendGrid (for email workflows)
+SENDGRID_API_KEY=your_key_here
 
 
 ## 📚 Workflows
@@ -504,6 +574,13 @@ Open http://localhost:3000
 
 ---
 
+## 🧠 Key Engineering Concepts Demonstrated
+
+- Distributed task queues (Celery + Redis)
+- DB-driven scheduling system
+- LLM + rule-based hybrid architecture
+- Fault-tolerant execution with retries
+- Asynchronous system design
 
 ## 📸 Screenshots
 
@@ -521,9 +598,9 @@ Open http://localhost:3000
 ## 📖 API Documentation
 
 ### Base URL
-```
-http://localhost:5000/api
-```
+
+- Local: http://localhost:5000/api  
+- Production: https://your-render-url.onrender.com/api
 
 ### Endpoints
 
@@ -626,6 +703,13 @@ UAOS is designed as a **multi-service distributed system** consisting of:
 Each component is deployed independently for scalability.
 > ⚠️ Note: UAOS requires multiple services (worker + scheduler + broker) and is deployed as a distributed system.
 
+### 🌍 Live Deployment
+
+- Frontend (Vercel): https://your-link.vercel.app
+- Backend (Render): https://your-backend.onrender.com
+
+> Note: Free-tier services may have cold start delays.
+
 ### Docker Deployment
 ```bash
 # Build images
@@ -637,16 +721,6 @@ docker-compose up -d
 # View logs
 docker-compose logs -f
 ```
-
-### Railway Deployment
-1. Fork this repository
-2. Connect to Railway
-3. Add environment variables
-4. Deploy!
-
-[Detailed Deployment Guide](docs/DEPLOYMENT.md)
-
----
 
 ## 🤝 Contributing
 
@@ -671,6 +745,8 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 ## 👤 Author
 
 **Krishna Arora**
+- 🚀 Final Year BTech IT Student | Backend + AI Systems
+- 💡 Focus: Distributed Systems, Automation, AI Integration
 - GitHub: [@krishtech11](https://github.com/krishtech11)
 - LinkedIn: [Krishna Arora](https://linkedin.com/in/krishna-arora-83b87a26b/)
 - Email: krishnaarora747@gmail.com
@@ -687,25 +763,30 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-## 📈 Project Stats
+## 📈 System Metrics
 
-- **Lines of Code:** ~5,000+
-- **Development Time:** 10 weeks
-- **Technologies:** 15+
-- **Workflows:** 3 (extensible)
-- **Test Coverage:** Planned
+- Handles scheduled and on-demand workflows
+- Supports multi-step task execution
+- Designed for horizontal scalability (worker-based)
 
 ---
 
+## ⚖️ Comparison
+
+| Feature | UAOS | Zapier | Airflow |
+|--------|------|--------|--------|
+| AI Workflow Creation | ✅ | ❌ | ❌ |
+| Local LLM Support | ✅ | ❌ | ❌ |
+| Visual Builder | 🚧 | ✅ | ❌ |
+| Code-Free Automation | ✅ | ✅ | ❌ |
+
 ## 🔮 Future Roadmap
 
-- [ ] Web scraping workflows
-- [ ] Slack/Discord integrations
-- [ ] Mobile app (React Native)
-- [ ] Workflow marketplace
-- [ ] Multi-user support with teams
-- [ ] Advanced analytics dashboard
-
+- AI-generated workflows from natural language
+- Visual drag-and-drop workflow builder
+- Plugin system (Gmail, Slack, APIs)
+- Multi-user system with role-based access
+- Real-time execution monitoring (WebSockets)
 ---
 
 **⭐ Star this repo if you find it useful!**
